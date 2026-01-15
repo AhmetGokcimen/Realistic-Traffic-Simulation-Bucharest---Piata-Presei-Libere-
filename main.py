@@ -3,690 +3,571 @@ import time
 import math
 import random
 import os
+import traceback
 
-# Force unbuffered output
-sys.stdout.reconfigure(line_buffering=True)
-print("Starting application...", flush=True)
+# --- CRASH LOGGER ---
+def log_crash(msg):
+    with open("crash_log.txt", "w") as f:
+        f.write(msg)
 
-try:
-    print("Importing osmnx...", flush=True)
-    import osmnx as ox
-    print("Importing networkx...", flush=True)
-    import networkx as nx
-    print("Importing shapely...", flush=True)
-    from shapely.geometry import LineString, MultiLineString
-    print("Importing pygame...", flush=True)
-    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-    import pygame
-    import PIL.Image
-    print("Imports complete.", flush=True)
-except Exception as e:
-    print(f"Error during imports: {e}")
-    input("Press Enter to exit...")
+def exception_hook(exctype, value, tb):
+    log_crash("".join(traceback.format_exception(exctype, value, tb)))
     sys.exit(1)
 
-# Configure osmnx
+sys.excepthook = exception_hook
+
+if sys.stdout:
+    sys.stdout.reconfigure(line_buffering=True)
+
+try:
+    import osmnx as ox
+    import networkx as nx
+    from shapely.geometry import LineString
+    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+    import pygame
+except:
+    log_crash(f"Import Error:\n{traceback.format_exc()}")
+    sys.exit(1)
+
 ox.settings.use_cache = True
 ox.settings.log_console = False
 
+# --- CONFIG ---
+SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
+METERS_TO_PIXELS = 12.0
+
+# --- COLORS ---
+COLOR_BG = (16, 16, 16)       
+COLOR_ASPHALT = (32, 32, 32)  
+COLOR_ORANGE = (255, 165, 0)  
+COLOR_RED = (255, 0, 0)       
+COLOR_GREEN = (0, 255, 0)
+COLOR_CURB = (0, 0, 0)
+COLOR_TEXT = (220, 220, 220)
+COLOR_BTN_IDLE = (50, 50, 50)
+COLOR_BTN_HOVER = (80, 80, 80)
+COLOR_BTN_ACTIVE = (100, 200, 100)
+
+# --- UI BUTTON CLASS ---
+class Button:
+    def __init__(self, x, y, w, h, text, value):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.text = text
+        self.value = value
+        self.is_hovered = False
+        
+    def draw(self, screen, font, current_val):
+        color = COLOR_BTN_IDLE
+        if self.value == current_val:
+            color = COLOR_BTN_ACTIVE
+        elif self.is_hovered:
+            color = COLOR_BTN_HOVER
+            
+        pygame.draw.rect(screen, color, self.rect, border_radius=5)
+        pygame.draw.rect(screen, (200,200,200), self.rect, 2, border_radius=5)
+        
+        txt_surf = font.render(self.text, True, (255,255,255))
+        txt_rect = txt_surf.get_rect(center=self.rect.center)
+        screen.blit(txt_surf, txt_rect)
+        
+    def check_hover(self, mx, my):
+        self.is_hovered = self.rect.collidepoint(mx, my)
+        
+    def is_clicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.is_hovered:
+                return True
+        return False
+
+# --- SIMULATION CLASSES ---
+
 class TrafficLight:
-    def __init__(self, node_id, cycle_time=30.0):
+    def __init__(self, node_id, green_time=20.0, red_time=20.0):
         self.node_id = node_id
-        self.is_green = True
-        self.cycle_time = cycle_time
-        self.timer = random.uniform(0, cycle_time)
+        self.state = 0 # 0=Green, 1=Yellow, 2=Red
+        self.timer = random.uniform(0, green_time)
+        self.green_time = green_time
+        self.yellow_time = 2.0
+        self.red_time = red_time
 
     def update(self, dt):
         self.timer -= dt
         if self.timer <= 0:
-            self.is_green = not self.is_green
-            self.timer = self.cycle_time
+            if self.state == 0:
+                self.state = 1
+                self.timer = self.yellow_time
+            elif self.state == 1:
+                self.state = 2
+                self.timer = self.red_time
+            elif self.state == 2:
+                self.state = 0
+                self.timer = self.green_time
+    
+    def get_color(self):
+        if self.state == 0: return COLOR_GREEN
+        if self.state == 1: return (255, 255, 0)
+        return COLOR_RED
 
 class Car:
-    def __init__(self, car_id, origin_node, destination_node, G):
+    def __init__(self, car_id, G):
         self.id = car_id
         self.G = G
-        self.length = 12.0 
+        # Visual Customization
+        self.length_m = random.uniform(3.8, 5.0) # Different lengths
+        self.width_m = random.uniform(1.8, 2.3)
+        self.color = (random.randint(50,255), random.randint(50,255), random.randint(50,255))
+        
         self.finished = False
         
-        # Physics State
         self.velocity = 0.0
-        self.max_velocity = 10.0 
-        self.acceleration = 0.0
+        self.max_velocity = 8.0 # ~30km/h
         
         # IDM Parameters
-        self.a_max = 1.5
+        self.a_max = 2.0
         self.b_comf = 2.0
+        self.s0 = 1.5 
         self.T = 1.0
-        self.s0 = 2.0
-        self.delta = 4.0
-
-        # Init
-        self.reset(origin_node, destination_node)
-
-    def reset(self, origin_node, destination_node, path=None):
-        self.origin = origin_node
-        self.destination = destination_node
-        self.finished = False
-        self.velocity = 5.5 # Start with some speed (20km/h) to look like entering
-        self.acceleration = 0.0
         
-        try:
-            if path:
-                self.path = path
-            else:
-                self.path = nx.shortest_path(self.G, origin_node, destination_node, weight='length')
-                
-            self.path_index = 0 
-            self.progress = 0.0
-            self.current_edge_len = self._get_edge_len(self.path[0], self.path[1])
-        except (nx.NetworkXNoPath, IndexError, Exception):
-            self.finished = True
-            self.path = []
+        self.waiting_time = 0.0
+        self.is_aggressive = False
+        self.path = []
+
+    def spawn_scatter(self):
+        edges = list(self.G.edges(keys=True, data=True))
+        if not edges: return False
+        
+        weights = [d['length'] for u,v,k,d in edges]
+        
+        for _ in range(10): 
+             u, v, k, data = random.choices(edges, weights=weights, k=1)[0]
+             length = data['length']
+             start_prog = random.uniform(0.0, max(0.0, length - 5.0))
+             
+             if length < 5.0: continue 
+
+             nodes = list(self.G.nodes())
+             dest = random.choice(nodes)
+             if dest == u or dest == v: continue
+             
+             try:
+                 partial_path = nx.shortest_path(self.G, v, dest, weight='length')
+                 full_path = [u] + partial_path
+                 self.reset(full_path, start_prog)
+                 return True
+             except: pass
+        return False
+
+    def reset(self, path, start_progress=0.0):
+        self.path = path
+        self.path_index = 0
+        self.progress = start_progress
+        self.finished = False
+        self.velocity = random.uniform(3.0, 8.0)
+        self.waiting_time = 0.0
+        self.is_aggressive = False
+        
+        u = self.path[0]
+        v = self.path[1]
+        self.current_edge_len = self.G.edges[u,v,0]['length']
 
     def _get_edge_len(self, u, v):
-        if self.G.has_edge(u, v):
-            data = self.G.get_edge_data(u, v)
-            return data[0]['length']
-        return 50.0
-
-    def calculate_acceleration(self, gap, leader_velocity, dt):
-        noise = 0.0
-        if random.random() < 0.1: 
-             noise = -random.uniform(0.0, 1.5)
-        
-        delta_v = self.velocity - leader_velocity
-        s_star = self.s0 + max(0, self.velocity * self.T + (self.velocity * delta_v) / (2 * math.sqrt(self.a_max * self.b_comf)))
-        
-        effective_gap = max(0.1, gap)
-        accel = self.a_max * (1 - (self.velocity / self.max_velocity)**self.delta - (s_star / effective_gap)**2)
-        return accel + noise
+        return self.G.edges[u,v,0]['length']
 
     def update_physics(self, dt, traffic_sim):
-        if self.finished: return
-
-        current_u = self.path[self.path_index]
-        current_v = self.path[self.path_index + 1]
-        edge_key = (current_u, current_v)
+        if self.finished or not self.path: return
         
+        u = self.path[self.path_index]
+        if self.path_index + 1 >= len(self.path):
+            self.finished = True
+            return
+        v = self.path[self.path_index+1]
+        
+        edge_key = (u,v)
         cars_here = traffic_sim.cars_on_edge.get(edge_key, [])
-        try:
-            my_idx = cars_here.index(self)
-        except ValueError:
-            my_idx = -1
-
-        gap = 1000.0 
-        leader_vel = self.max_velocity 
-        max_progress_constraint = self.current_edge_len + 10.0 
-
-        # STACKING FIX: Increased gap to 8.0m (~25px)
-        SAFE_GAP = 8.0
+        try: my_idx = cars_here.index(self)
+        except: my_idx = -1
+        
+        leader_vel = self.max_velocity
+        gap = 1000.0
+        
+        if self.velocity < 0.1: self.waiting_time += dt
+        elif self.velocity > 1.0: 
+             self.waiting_time = 0.0
+             self.is_aggressive = False
+        
+        if self.waiting_time > 5.0: self.is_aggressive = True
+        
+        dist_to_end = self.current_edge_len - self.progress
+        is_green = False
+        if v in traffic_sim.traffic_lights:
+             if traffic_sim.traffic_lights[v].state == 0: is_green = True
 
         if my_idx > 0:
             leader = cars_here[my_idx - 1]
-            gap = leader.progress - self.progress - leader.length
+            gap = leader.progress - self.progress - leader.length_m
             leader_vel = leader.velocity
-            max_progress_constraint = leader.progress - leader.length - SAFE_GAP 
         else:
-            # Ghost Leader Logic
-            dist_to_end = self.current_edge_len - self.progress
-            gap = 1000.0
-            leader_vel = self.max_velocity
+            should_stop_light = False
+            if v in traffic_sim.traffic_lights:
+                tl = traffic_sim.traffic_lights[v]
+                if tl.state == 2: # Red
+                    should_stop_light = True
+                elif tl.state == 1: # Yellow
+                    if (dist_to_end / max(self.velocity, 2.0)) > 2.0 or dist_to_end > 10.0:
+                         should_stop_light = True
             
-            found_ghost = False
-            if self.path_index < len(self.path) - 2:
-                 next_node = self.path[self.path_index + 2]
-                 next_edge_key = (current_v, next_node)
-                 next_cars = traffic_sim.cars_on_edge.get(next_edge_key, [])
-                 if next_cars:
-                      ghost_leader = next_cars[-1] 
-                      gap = dist_to_end + ghost_leader.progress - ghost_leader.length
-                      leader_vel = ghost_leader.velocity
-                      max_progress_constraint = self.current_edge_len + ghost_leader.progress - ghost_leader.length - SAFE_GAP
-                      found_ghost = True
-
-            light_state = traffic_sim.get_light_state(current_v)
-            busy = traffic_sim.is_intersection_busy(current_v)
+            if should_stop_light:
+                if dist_to_end < gap:
+                    gap = dist_to_end
+                    leader_vel = 0.0
             
-            if (light_state == 'RED' or busy) and not found_ghost:
-                gap = dist_to_end
-                leader_vel = 0.0
-                max_progress_constraint = self.current_edge_len - SAFE_GAP
-            elif (light_state == 'RED' or busy) and found_ghost:
-                 stop_line_gap = dist_to_end
-                 if stop_line_gap < gap:
-                      gap = stop_line_gap
-                      leader_vel = 0.0
-                      max_progress_constraint = self.current_edge_len - SAFE_GAP
+            elif not is_green and not self.is_aggressive and v not in traffic_sim.traffic_lights:
+                if self.path_index + 2 < len(self.path):
+                    v_next = self.path[self.path_index+2]
+                    next_key = (v, v_next)
+                    cars_next = traffic_sim.cars_on_edge.get(next_key, [])
+                    if cars_next:
+                        next_leader = cars_next[-1]
+                        proj_gap = dist_to_end + next_leader.progress - next_leader.length_m
+                        if proj_gap < gap:
+                             gap = proj_gap
+                             leader_vel = next_leader.velocity
 
-        self.acceleration = self.calculate_acceleration(gap, leader_vel, dt)
-        self.velocity += self.acceleration * dt
+        if gap < 0.01: gap = 0.01
+        
+        delta_v = self.velocity - leader_vel
+        s_star = self.s0 + self.velocity * self.T + (self.velocity * delta_v) / (2*math.sqrt(self.a_max * self.b_comf))
+        acc = self.a_max * (1 - (self.velocity / self.max_velocity)**4 - (s_star / gap)**2)
+        
+        if is_green:
+             if my_idx == 0 or gap > 20.0:
+                  if self.velocity < 5.0: 
+                       acc = self.a_max * 3.0 
+                  if self.velocity < 0.1 and gap > 5.0:
+                       self.velocity = 3.0 
+                       self.progress += 0.1
+        
+        self.velocity += acc * dt
         if self.velocity < 0: self.velocity = 0
-            
-        step_dist = self.velocity * dt + 0.5 * self.acceleration * (dt**2)
-        if step_dist < 0: step_dist = 0
+        if self.velocity > self.max_velocity: self.velocity = self.max_velocity
         
-        target_progress = self.progress + step_dist
+        if gap < 0.5 and self.velocity > 0:
+             self.velocity = 0
         
-        # Apply Hard Constraint
-        if target_progress > max_progress_constraint:
-            target_progress = max_progress_constraint
-            self.velocity = 0.0 
-
-        if target_progress >= self.current_edge_len:
-            # Gridlock Prevention
-            can_enter_grid = True
-            if self.path_index < len(self.path) - 2:
-                next_node = self.path[self.path_index + 2]
-                next_edge_key = (current_v, next_node)
-                cars_ahead = traffic_sim.cars_on_edge.get(next_edge_key, [])
-                if cars_ahead:
-                    last_car = cars_ahead[-1] 
-                    if last_car.progress < (last_car.length + SAFE_GAP):
-                        can_enter_grid = False
-
-            if not can_enter_grid:
-                 self.progress = self.current_edge_len - 0.5
-                 self.velocity = 0.0
-            elif traffic_sim.try_enter_intersection(current_v):
-                 if self.path_index < len(self.path) - 2:
-                    self.path_index += 1
-                    overhang = target_progress - self.current_edge_len
-                    self.progress = overhang
-                    u = self.path[self.path_index]
-                    v = self.path[self.path_index + 1]
-                    self.current_edge_len = self._get_edge_len(u, v)
-                    traffic_sim.mark_intersection_busy(current_v)
-                 else:
-                    self.finished = True
-                    self.velocity = 0
-            else:
-                 self.progress = self.current_edge_len - 0.1
-                 self.velocity = 0
-        else:
-            self.progress = target_progress
-
-    def get_state(self):
-        # ... get_state remains as is (visuals are perfect) ...
-        # But we need to include it because replace_file_content replaces chunks. 
-        # Actually I can just skip it if I use Careful placement. But I must include standard code if replacing Update_Physics. 
-        # I'll just copy the existing visual code logic here to ensure it's not lost.
+        step_dist = self.velocity * dt
+        if step_dist > gap: step_dist = max(0, gap - 0.1)
         
-        color = (20, 200, 20) 
-        if self.velocity < 2.0:
-             color = (255, 30, 30) 
-        elif self.velocity < 7.0: 
-             color = (255, 140, 0) 
-
-        if self.finished or not self.path:
-             return 0, 0, 0, False, color
-
-        u = self.path[self.path_index]
-        v = self.path[self.path_index + 1]
-        
-        data = self.G.get_edge_data(u, v)[0]
-        
-        current_x, current_y = 0, 0
-        current_angle = 0
-        
-        geom_visual = data.get('geometry_visual', None)
-        
-        if geom_visual:
-             original_len = data['length']
-             visual_len = geom_visual.length
-             if original_len > 0:
-                 ratio = self.progress / original_len
-                 visual_progress = ratio * visual_len
+        self.progress += step_dist
+        if self.progress >= self.current_edge_len:
+             self.path_index += 1
+             if self.path_index >= len(self.path)-1:
+                  self.finished = True
              else:
-                 visual_progress = 0
-                 
-             p_val = max(0.0, min(visual_progress, visual_len))
-             pt = geom_visual.interpolate(p_val)
-             current_x, current_y = pt.x, pt.y
-             
-             p_next = max(0.0, min(visual_progress + 1.0, visual_len))
-             pt2 = geom_visual.interpolate(p_next)
-             dx = pt2.x - pt.x
-             dy = pt2.y - pt.y
-             if math.hypot(dx, dy) < 0.01:
-                  p_prev = max(0.0, min(visual_progress - 1.0, visual_len))
-                  pt_prev = geom_visual.interpolate(p_prev)
-                  dx = pt.x - pt_prev.x
-                  dy = pt.y - pt_prev.y
-             current_angle = math.degrees(math.atan2(dy, dx))
-        else:
-            u_node = self.G.nodes[u]
-            v_node = self.G.nodes[v]
-            dx = v_node['x'] - u_node['x']
-            dy = v_node['y'] - u_node['y']
-            current_angle = math.degrees(math.atan2(dy, dx))
-            ratio = min(1.0, self.progress / self.current_edge_len)
-            current_x = u_node['x'] + dx * ratio
-            current_y = u_node['y'] + dy * ratio
+                  self.progress = 0.0
+                  self.current_edge_len = self._get_edge_len(self.path[self.path_index], self.path[self.path_index+1])
+
+    def get_state_visual(self):
+        if not self.path or self.finished: return 0,0,0
+        u = self.path[self.path_index]
+        v = self.path[self.path_index+1]
+        data = self.G.edges[u,v,0]
+        geom = data.get('geometry')
+        OFFSET_M = 1.5
         
-        return current_x, current_y, current_angle, False, color
+        if geom:
+             frac = self.progress / self.current_edge_len
+             frac = max(0, min(1, frac))
+             pt = geom.interpolate(frac, normalized=True)
+             pt_ex = geom.interpolate(min(frac+0.01, 1.0), normalized=True)
+             dx, dy = pt_ex.x - pt.x, pt_ex.y - pt.y
+             angle = 0 if (dx==0 and dy==0) else math.degrees(math.atan2(dy, dx))
+             rad = math.radians(angle)
+             ox = -math.sin(rad)*OFFSET_M
+             oy = math.cos(rad)*OFFSET_M
+             return pt.x + ox, pt.y + oy, angle
+        else:
+             n1, n2 = self.G.nodes[u], self.G.nodes[v]
+             frac = self.progress / self.current_edge_len
+             bx = n1['x'] + (n2['x'] - n1['x'])*frac
+             by = n1['y'] + (n2['y'] - n1['y'])*frac
+             dx, dy = n2['x']-n1['x'], n2['y']-n1['y']
+             angle = math.degrees(math.atan2(dy, dx))
+             rad = math.radians(angle)
+             ox = -math.sin(rad)*OFFSET_M
+             oy = math.cos(rad)*OFFSET_M
+             return bx + ox, by + oy, angle
 
 class TrafficSim:
     def __init__(self, G):
         self.G = G
+        self.target_car_count = 250 # Default
         self.cars = []
-        self.nodes = list(G.nodes())
-        self.node_locks = {n: 0 for n in self.nodes}
         self.cars_on_edge = {}
         self.traffic_lights = {}
-        self._init_traffic_lights()
-        self.entry_nodes = []
-        self._identify_entry_nodes()
-
-    def _identify_entry_nodes(self):
-        # Calculate bounds
-        xs = [d['x'] for n, d in self.G.nodes(data=True)]
-        ys = [d['y'] for n, d in self.G.nodes(data=True)]
-        min_x, max_x = min(xs), max(xs)
-        min_y, max_y = min(ys), max(ys)
+        self._init_tl()
         
-        width = max_x - min_x
-        height = max_y - min_y
-        
-        buffer = 0.1 # 10% edge buffer
-        
-        self.entry_nodes = []
-        self.hidden_edges = set()
-        
-        for n, d in self.G.nodes(data=True):
-            # Check if near edges
-            if (d['x'] < min_x + width*buffer) or \
-               (d['x'] > max_x - width*buffer) or \
-               (d['y'] < min_y + height*buffer) or \
-               (d['y'] > max_y - height*buffer):
-                   self.entry_nodes.append(n)
-        
-        # Identify Hidden Edges (Connected to Entry Nodes)
-        for u, v, k in self.G.edges(keys=True):
-            if u in self.entry_nodes or v in self.entry_nodes:
-                self.hidden_edges.add((u, v))
-                
-        print(f"Identified {len(self.entry_nodes)} Entry Nodes and {len(self.hidden_edges)} Hidden Edges.", flush=True)
+        nodes = list(self.G.nodes(data=True))
+        xs = [d['x'] for n, d in nodes]
+        ys = [d['y'] for n, d in nodes]
+        self.camera_x = sum(xs)/len(xs)
+        self.camera_y = sum(ys)/len(ys)
+        self.zoom = 12.0
+        self.dragging = False
+        self.ds_mouse = (0,0)
+        self.ds_cam = (0,0)
 
-    def _init_traffic_lights(self):
-        degrees = dict(self.G.degree())
-        for node in self.nodes:
-            if degrees.get(node, 0) >= 3:
-                self.traffic_lights[node] = TrafficLight(node, cycle_time=random.uniform(20.0, 40.0))
+    def _init_tl(self):
+         for n in self.G.nodes():
+              if self.G.degree[n] >= 3:
+                   self.traffic_lights[n] = TrafficLight(n)
 
-    def get_light_state(self, node):
-        if node in self.traffic_lights:
-            return 'GREEN' if self.traffic_lights[node].is_green else 'RED'
-        return 'GREEN'
-
-    def spawn_cars(self, n):
-        for i in range(n):
-            self.add_car(i)
-
-    def _noisy_weight(self, u, v, d):
-        # Noise Factor: 0.5x to 5.0x length (Increased variance to force loop usage)
-        return d[0]['length'] * random.uniform(0.5, 5.0)
-
-    def get_random_path(self, origin, dest):
-        try:
-             return nx.shortest_path(self.G, origin, dest, weight=self._noisy_weight)
-        except:
-             return None
-
-    def add_car(self, i):
-        if not self.entry_nodes:
-             origin = random.choice(self.nodes)
-        else:
-             origin = random.choice(self.entry_nodes) # SPAWN FROM EDGE
-        
-        dest = random.choice(self.nodes)
-        while origin == dest:
-             dest = random.choice(self.nodes)
-             
-        # Calculate path with NOISE here
-        path = self.get_random_path(origin, dest)
-        if path:
-            car = Car(i, origin, dest, self.G)
-            car.reset(origin, dest, path) 
-            self.cars.append(car)
-            # If path failed in reset (shouldn't if get_random_path worked), it might be finished immediately
-            if car.finished: 
-                self.cars.pop() # Remove bad car immediately
-        else:
-            # Failed to find path, don't add car
-            pass
-
-    def reset_car_route(self, car):
-        if not self.entry_nodes:
-             origin = random.choice(self.nodes)
-        else:
-             origin = random.choice(self.entry_nodes)
-             
-        dest = random.choice(self.nodes)
-        while origin == dest:
-             dest = random.choice(self.nodes)
-        
-        path = self.get_random_path(origin, dest)
-        if path:
-             car.reset(origin, dest, path)
-        else:
-             self.reset_car_route(car) # Retry
-
-    def is_intersection_busy(self, node):
-        return self.node_locks[node] > 0
-
-    def try_enter_intersection(self, node):
-        return self.node_locks[node] <= 0
-
-    def mark_intersection_busy(self, node):
-        self.node_locks[node] = 10 
+    def spawn_car(self):
+        c = Car(len(self.cars), self.G)
+        if c.spawn_scatter():
+             self.cars.append(c)
 
     def step(self, dt):
-        for light in self.traffic_lights.values():
-            light.update(dt)
-        for n in self.node_locks:
-            if self.node_locks[n] > 0:
-                self.node_locks[n] -= 1
+        for tl in self.traffic_lights.values(): tl.update(dt)
         
-        # OBJECT PERMANENCE & RESPAWN
-        for car in self.cars:
-            if car.finished:
-                self.reset_car_route(car) 
-                
+        # Cleanup and Target Count Control
+        self.cars = [c for c in self.cars if not c.finished]
+        
+        # Spawn if below target
+        while len(self.cars) < self.target_car_count: 
+            self.spawn_car()
+            
+        # Remove if above target (removing from end is more performant)
+        if len(self.cars) > self.target_car_count:
+            self.cars = self.cars[:self.target_car_count]
+        
         self.cars_on_edge = {}
-        # Filter active cars strictly
-        active_cars = [c for c in self.cars if not c.finished and c.path]
-        
-        for car in active_cars:
-            u = car.path[car.path_index]
-            v = car.path[car.path_index + 1]
-            edge = (u, v)
-            if edge not in self.cars_on_edge:
-                self.cars_on_edge[edge] = []
-            self.cars_on_edge[edge].append(car)
-        for edge in self.cars_on_edge:
-            self.cars_on_edge[edge].sort(key=lambda c: c.progress, reverse=True)
-            
-        for car in active_cars:
-            car.update_physics(dt, self)
-            
-        # Re-filter in case physics finished them this frame (Prevent (0,0) glitch)
-        final_active_cars = [c for c in active_cars if not c.finished]
-        return final_active_cars
+        active = [c for c in self.cars if c.path and not c.finished]
+        for c in active:
+             k = (c.path[c.path_index], c.path[c.path_index+1])
+             if k not in self.cars_on_edge: self.cars_on_edge[k] = []
+             self.cars_on_edge[k].append(c)
+        for k in self.cars_on_edge:
+             self.cars_on_edge[k].sort(key=lambda x: x.progress, reverse=True)
+        for c in active: c.update_physics(dt, self)
 
-# VISUAL HELPERS
-def world_to_screen(wx, wy, cam_x, cam_y, zoom, base_scale, screen_h):
-    # World: x, y (meters, y up)
-    # Screen: x, y (pixels, y down)
-    
-    # Apply Zoom & Camera Pan
-    # cam_x, cam_y is the center of the camera in WORLD coords? NO, typically camera offset in pixels
-    # Let's say cam_x, cam_y is translation in pixels.
-    
-    sx = wx * base_scale * zoom + cam_x
-    sy = screen_h - (wy * base_scale * zoom + cam_y) # Flip Y
+    def toggle_light_at_cursor(self, mx, my):
+        # Convert mouse coords to world coords
+        wx, wy = screen_to_world(mx, my, self.camera_x, self.camera_y, self.zoom)
+        
+        closest_node = None
+        min_dist = 30.0 # Click range (meters)
+        
+        for node_id, tl in self.traffic_lights.items():
+            nx = self.G.nodes[node_id]['x']
+            ny = self.G.nodes[node_id]['y']
+            dist = math.hypot(nx - wx, ny - wy)
+            
+            if dist < min_dist:
+                min_dist = dist
+                closest_node = tl
+
+        if closest_node:
+            # Toggle state: Green to Red, others to Green
+            if closest_node.state == 0:
+                closest_node.state = 2
+                closest_node.timer = closest_node.red_time
+            else:
+                closest_node.state = 0
+                closest_node.timer = closest_node.green_time
+            return True
+        return False
+
+def lerp_color(c1, c2, t):
+    t = max(0.0, min(1.0, t))
+    return tuple(int(a + (b - a) * t) for a, b in zip(c1, c2))
+
+def world_to_screen(wx, wy, cx, cy, zoom):
+    sx = (SCREEN_WIDTH // 2) + (wx - cx) * zoom
+    sy = (SCREEN_HEIGHT // 2) + (cy - wy) * zoom
     return int(sx), int(sy)
 
+def screen_to_world(sx, sy, cx, cy, zoom):
+    wx = cx + (sx - SCREEN_WIDTH/2) / zoom
+    wy = cy - (sy - SCREEN_HEIGHT/2) / zoom
+    return wx, wy
+
 def main():
-    print("Initializing Realistic PyGame Simulation...", flush=True)
-    point = (44.478121, 26.072711)
-    G = ox.graph_from_point(point, dist=400, network_type='drive')
+    graph_file = "traffic_graph.graphml"
+    if getattr(sys, 'frozen', False) and os.path.exists(os.path.join(sys._MEIPASS, graph_file)):
+        G = ox.load_graphml(os.path.join(sys._MEIPASS, graph_file))
+    elif os.path.exists(graph_file):
+        G = ox.load_graphml(graph_file)
+    else:
+        G = ox.graph_from_point((44.478121, 26.072711), dist=450, network_type='drive')
+        ox.save_graphml(G, graph_file)
     G_proj = ox.project_graph(G)
-    
-    print("Pre-calculating Visual Geometries...", flush=True)
-    offset_dist = 6.0
-    for u, v, k, data in G_proj.edges(keys=True, data=True):
-        if 'geometry' in data:
-            raw_geom = data['geometry']
-            try:
-                # Calculate Offset
-                vis_geom = raw_geom.parallel_offset(offset_dist, 'right', resolution=16, join_style=2)
-                
-                # Handling Geometry Types
-                if vis_geom.is_empty:
-                     data['geometry_visual'] = raw_geom # Fallback
-                elif vis_geom.geom_type == 'LineString':
-                     # parallel_offset usually (but not always) preserves direction for 'right'. 
-                     # If it looks reversed, we might need check. 
-                     # Simple check: distance(start, offset_start) vs distance(start, offset_end)
-                     p0 = raw_geom.interpolate(0)
-                     vp0 = vis_geom.interpolate(0)
-                     vp_end = vis_geom.interpolate(vis_geom.length)
-                     
-                     d_normal = p0.distance(vp0)
-                     d_flipped = p0.distance(vp_end)
-                     
-                     if d_flipped < d_normal: # It's reversed
-                          vis_geom = LineString(list(vis_geom.coords)[::-1])
-                          
-                     data['geometry_visual'] = vis_geom
-                elif vis_geom.geom_type == 'MultiLineString':
-                     # Pick longest
-                     best_g = max(vis_geom.geoms, key=lambda g: g.length)
-                     data['geometry_visual'] = best_g
-                else:
-                     data['geometry_visual'] = raw_geom
-            except:
-                data['geometry_visual'] = raw_geom
-        else:
-             # Create Logic for Straight Edge
-             u_node = G_proj.nodes[u]
-             v_node = G_proj.nodes[v]
-             ls = LineString([(u_node['x'], u_node['y']), (v_node['x'], v_node['y'])])
-             try:
-                 vis_geom = ls.parallel_offset(offset_dist, 'right', resolution=2)
-                 if vis_geom.is_empty: data['geometry_visual'] = ls
-                 else: 
-                     # Check reverse
-                     p0 = ls.interpolate(0)
-                     vp0 = vis_geom.interpolate(0)
-                     vp_end = vis_geom.interpolate(vis_geom.length)
-                     if p0.distance(vp_end) < p0.distance(vp0):
-                         vis_geom = LineString(list(vis_geom.coords)[::-1])
-                     data['geometry_visual'] = vis_geom
-             except:
-                 data['geometry_visual'] = ls
+    for u, v, k, d in G_proj.edges(keys=True, data=True):
+         if 'geometry' not in d:
+              d['geometry'] = LineString([(G_proj.nodes[u]['x'], G_proj.nodes[u]['y']),
+                                          (G_proj.nodes[v]['x'], G_proj.nodes[v]['y'])])
 
     sim = TrafficSim(G_proj)
-    print("Spawning 200 cars...", flush=True)
-    sim.spawn_cars(200)
 
-    # Calculate Bounds
-    nodes = list(G_proj.nodes(data=True))
-    xs = [d['x'] for n, d in nodes]
-    ys = [d['y'] for n, d in nodes]
-    min_x, max_x = min(xs), max(xs)
-    min_y, max_y = min(ys), max(ys)
-    width_m = max_x - min_x
-    height_m = max_y - min_y
-    
-    # VISUAL STAGE DEFINITION
-    # Hide the outer 10% (Wings) so cars appear to enter/exit from off-screen
-    # This also naturally hides any (0,0) glitches or far-flung artifacts
-    stage_buffer_x = width_m * 0.08 
-    stage_buffer_y = height_m * 0.08
-    
-    stage_min_x = min_x + stage_buffer_x
-    stage_max_x = max_x - stage_buffer_x
-    stage_min_y = min_y + stage_buffer_y
-    stage_max_y = max_y - stage_buffer_y
-
-    def is_on_stage(wx, wy):
-        return (stage_min_x <= wx <= stage_max_x) and (stage_min_y <= wy <= stage_max_y)
-
-    # Init PyGame
     pygame.init()
-    SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
-    pygame.display.set_caption("Traffic Sim: Scroll to Zoom, Drag to Pan")
+    pygame.display.set_caption("Traffic Sim: God Mode & Controls")
     clock = pygame.time.Clock()
-
-    # Camera State
-    zoom = 1.0
-    # Center map initially
-    padding = 50
-    scale_x = (SCREEN_WIDTH - 2*padding) / width_m
-    scale_y = (SCREEN_HEIGHT - 2*padding) / height_m
-    base_scale = min(scale_x, scale_y)
+    font = pygame.font.SysFont('arial', 14, bold=True)
     
-    # Centering translation
-    cx_world = width_m/2
-    cy_world = height_m/2
-    
-    cam_x = SCREEN_WIDTH/2 - cx_world * base_scale
-    cam_y = SCREEN_HEIGHT/2 - cy_world * base_scale 
-    
-    dragging = False
-    last_mouse = (0, 0)
-
-    # GIF Recording
-    is_recording = False
-    recorded_frames = []
+    # --- CREATE BUTTONS ---
+    buttons = []
+    vals = [50, 100, 150, 200, 250]
+    bx, by = 10, SCREEN_HEIGHT - 40
+    for v in vals:
+        buttons.append(Button(bx, by, 50, 30, str(v), v))
+        bx += 60 # Add spacing
 
     running = True
-    print("Starting Loop...", flush=True)
-    
-    font = pygame.font.SysFont("arial", 20)
-
     while running:
-        dt = 0.1 # Fixed sim step
+        dt = 0.1
+        mx, my = pygame.mouse.get_pos()
         
-        # Event Handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 4: # Scroll Up -> Zoom In
-                    zoom *= 1.1
-                elif event.button == 5: # Scroll Down -> Zoom Out
-                    zoom /= 1.1
-                elif event.button == 1:
-                    dragging = True
-                    last_mouse = event.pos
-                elif event.button == 3: # Right click record
-                    if not is_recording:
-                         is_recording = True
-                         recorded_frames = []
-                         print("Recording...")
-                    else:
-                         is_recording = False
-                         print("Saving GIF...")
-                         if recorded_frames:
-                             pil_images = [PIL.Image.frombytes('RGB', screen.get_size(), f) for f in recorded_frames]
-                             pil_images[0].save(f"sim_{int(time.time())}.gif", save_all=True, append_images=pil_images[1:], duration=66, loop=0)
+        # Button Hover Check
+        for b in buttons: b.check_hover(mx, my)
 
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
-                    dragging = False
-            elif event.type == pygame.MOUSEMOTION:
-                if dragging:
-                    dx = event.pos[0] - last_mouse[0]
-                    dy = event.pos[1] - last_mouse[1]
-                    cam_x += dx
-                    cam_y -= dy 
-                    last_mouse = event.pos
-            elif event.type == pygame.VIDEORESIZE:
-                SCREEN_WIDTH, SCREEN_HEIGHT = event.w, event.h
+        for e in pygame.event.get():
+             if e.type == pygame.QUIT: running = False
+             elif e.type == pygame.MOUSEWHEEL:
+                  wx_b, wy_b = screen_to_world(mx, my, sim.camera_x, sim.camera_y, sim.zoom)
+                  if e.y > 0: sim.zoom = min(sim.zoom * 1.1, 50.0)
+                  elif e.y < 0: sim.zoom = max(sim.zoom / 1.1, 0.5)
+                  wx_n, wy_n = screen_to_world(mx, my, sim.camera_x, sim.camera_y, sim.zoom)
+                  sim.camera_x -= (wx_n - wx_b)
+                  sim.camera_y -= (wy_n - wy_b)
+             
+             elif e.type == pygame.MOUSEBUTTONDOWN:
+                  # Left Click (Buttons or Dragging)
+                  if e.button == 1:
+                      # Check if buttons are clicked first
+                      clicked_btn = False
+                      for b in buttons:
+                          if b.is_clicked(e):
+                              sim.target_car_count = b.value
+                              clicked_btn = True
+                              break
+                      
+                      # If no button clicked, drag camera
+                      if not clicked_btn:
+                          sim.dragging = True
+                          sim.ds_mouse = (mx, my)
+                          sim.ds_cam = (sim.camera_x, sim.camera_y)
+                  
+                  # Right Click (God Mode - Toggle Light)
+                  elif e.button == 3:
+                      sim.toggle_light_at_cursor(mx, my)
 
-        # Update Sim
-        active_cars = sim.step(dt)
-
-        # Draw
-        screen.fill((20, 30, 70)) # Dark Blue
+             elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
+                  sim.dragging = False
         
-        # Helper for transforms
-        def to_scr(px, py):
-            # px, py are World Coords (relative to min_x, min_y)
-            sx = px * base_scale * zoom + cam_x
-            sy = SCREEN_HEIGHT - (py * base_scale * zoom + cam_y)
-            return int(sx), int(sy)
-
-        # Draw Roads
-        road_width = int(30 * zoom)
-        if road_width < 1: road_width = 1
+        if sim.dragging:
+             dx = mx - sim.ds_mouse[0]
+             dy = my - sim.ds_mouse[1]
+             sim.camera_x = sim.ds_cam[0] - dx / sim.zoom
+             sim.camera_y = sim.ds_cam[1] + dy / sim.zoom
+             
+        sim.step(dt)
         
-        for u, v, k, data in G_proj.edges(keys=True, data=True):
-            # VISUAL MASK: Clip roads strictly to stage
-            # We don't hide edges list logic, we use geometric logic
-            # If both nodes are off stage, skip
-            u_node = G_proj.nodes[u]
-            v_node = G_proj.nodes[v]
-            
-            # Liberal check for roads (draw if partially visible)
-            # Actually, to be clean, if EITHER is off-stage, we might want to hide? 
-            # User wants "Entering" effect. 
-            # If we hide the road, cars floating on it will look weird unless we hide cars too.
-            # We hide cars strictly. We can hide roads strictly too (both must be on stage?)
-            # Let's hide road if BOTH are off-stage.
-            if not is_on_stage(u_node['x'], u_node['y']) and not is_on_stage(v_node['x'], v_node['y']):
-                 continue
+        screen.fill(COLOR_BG)
+        ROAD_W = int(3.5 * sim.zoom)
+        CURB_W = ROAD_W + 4
+        
+        # --- LAYER 1: ROAD ---
+        visible_edges = []
+        for u, v, k, d in G_proj.edges(keys=True, data=True):
+             g = d['geometry']
+             if g.geom_type == 'LineString':
+                  pts = [world_to_screen(x,y, sim.camera_x, sim.camera_y, sim.zoom) for x,y in g.coords]
+                  if any(-100 < p[0] < SCREEN_WIDTH+100 and -100 < p[1] < SCREEN_HEIGHT+100 for p in pts):
+                       visible_edges.append((u, v, d, pts))
+                       if len(pts) > 1:
+                            pygame.draw.lines(screen, COLOR_CURB, False, pts, CURB_W)
+                            pygame.draw.lines(screen, COLOR_ASPHALT, False, pts, ROAD_W)
+        
+        # --- LAYER 2: HEATMAP ---
+        heatmap_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        for u, v, d, pts in visible_edges:
+             if len(pts) > 1:
+                  cars = sim.cars_on_edge.get((u,v), [])
+                  cnt = len(cars)
+                  capacity = d['length'] / 7.0
+                  density = 0
+                  if capacity > 0: density = cnt / capacity
+                  
+                  if density > 0.1:
+                       col = (0,0,0,0) 
+                       if density >= 0.8:
+                            col = (*COLOR_RED, 100) 
+                       elif density >= 0.2:
+                            t = (density - 0.2) / 0.6
+                            rgb = lerp_color(COLOR_ORANGE, COLOR_RED, t) if density > 0.5 else COLOR_ORANGE
+                            col = (*rgb, 100)
+                       else:
+                            col = (*COLOR_ORANGE, 50)
+                       pygame.draw.lines(heatmap_surf, col, False, pts, ROAD_W)
+        screen.blit(heatmap_surf, (0,0))
+        
+        # --- LAYER 3: MARKINGS ---
+        for u, v, d, pts in visible_edges:
+             if len(pts) > 1:
+                  for i in range(len(pts)-1):
+                       p1, p2 = pts[i], pts[i+1]
+                       dist = math.hypot(p2[0]-p1[0], p2[1]-p1[1])
+                       if dist > 10:
+                            steps = int(dist / 20) 
+                            for s in range(1, steps):
+                                 t = s / steps
+                                 mx_p = int(p1[0] + (p2[0]-p1[0])*t)
+                                 my_p = int(p1[1] + (p2[1]-p1[1])*t)
+                                 pygame.draw.circle(screen, (80, 80, 80), (mx_p, my_p), 1)
 
-            geom = data.get('geometry_visual', None)
-            if geom:
-                try:
-                    xs, ys = geom.xy
-                    pts = []
-                    for x, y in zip(xs, ys):
-                        pts.append(to_scr(x - min_x, y - min_y))
-                    
-                    if len(pts) > 1:
-                        pygame.draw.lines(screen, (60, 60, 70), False, pts, road_width)
-                        if road_width > 5:
-                            pygame.draw.lines(screen, (200, 200, 200), False, pts, 1)
-                except: pass
-
-        # Draw Nodes (Intersections)
-        node_radius = int((road_width/2) * 1.2)
+        # --- LAYER 4: OBJECTS ---
         for n, d in G_proj.nodes(data=True):
-             # Strict Mask for Nodes
-             if not is_on_stage(d['x'], d['y']):
-                 continue
-                 
-             pos = to_scr(d['x'] - min_x, d['y'] - min_y)
-             colors = (60, 60, 70)
-             if n in sim.traffic_lights:
-                 l = sim.traffic_lights[n]
-                 colors = (0, 255, 0) if l.is_green else (255, 0, 0)
-                 
-             pygame.draw.circle(screen, colors, pos, node_radius)
+             sx, sy = world_to_screen(d['x'], d['y'], sim.camera_x, sim.camera_y, sim.zoom)
+             if -50 < sx < SCREEN_WIDTH+50 and -50 < sy < SCREEN_HEIGHT+50:
+                  rad = int(ROAD_W * 0.8)
+                  if n in sim.traffic_lights:
+                       l = sim.traffic_lights[n]
+                       pygame.draw.circle(screen, (0,0,0), (sx, sy), rad+2)
+                       pygame.draw.circle(screen, l.get_color(), (sx, sy), rad)
+                  else:
+                       pygame.draw.circle(screen, COLOR_CURB, (sx, sy), 2)
 
-        # Draw Cars
-        car_w = int(12 * zoom)
-        car_h = int(6 * zoom)
-        if car_w < 2: car_w = 2
-        if car_h < 1: car_h = 1
+        for c in sim.cars:
+             if c.finished: continue
+             wx, wy, ang = c.get_state_visual()
+             sx, sy = world_to_screen(wx, wy, sim.camera_x, sim.camera_y, sim.zoom)
+             if -100 < sx < SCREEN_WIDTH+100 and -100 < sy < SCREEN_HEIGHT+100:
+                  L = int(c.length_m * sim.zoom)
+                  W = int(c.width_m * sim.zoom)
+                  s = pygame.Surface((L, W), pygame.SRCALPHA)
+                  pygame.draw.rect(s, (0,0,0), (0,0,L,W), border_radius=2)
+                  
+                  # Custom Color Usage
+                  base_col = c.color
+                  if c.is_aggressive: base_col = (255, 50, 50)
+                  pygame.draw.rect(s, base_col, (1,1,L-2,W-2), border_radius=2)
+                  
+                  if c.velocity < 0.1:
+                       pygame.draw.rect(s, (255,0,0), (1,1,3,W//3))
+                       pygame.draw.rect(s, (255,0,0), (1,W-1-W//3,3,W//3))
+                  
+                  rs = pygame.transform.rotate(s, ang)
+                  screen.blit(rs, rs.get_rect(center=(sx, sy)))
 
-        for car in active_cars:
-             cx, cy, angle, _, color = car.get_state()
-             
-             # STRICT GEOMETRIC MASK
-             # If car is geometrically in the "Wings" (outer margin), DO NOT DRAW
-             if not is_on_stage(cx, cy):
-                 continue
-
-             sx, sy = to_scr(cx - min_x, cy - min_y)
-             
-             car_surf = pygame.Surface((car_w, car_h), pygame.SRCALPHA)
-             car_surf.fill(color)
-             
-             rotated_surf = pygame.transform.rotate(car_surf, angle)
-             rect = rotated_surf.get_rect(center=(sx, sy))
-             screen.blit(rotated_surf, rect)
-
-        # UI Overlay
-        ui_txt = font.render(f"Zoom: {zoom:.1f} | Cars: {len(active_cars)}", True, (255, 255, 255))
-        screen.blit(ui_txt, (10, 10))
+        # --- UI DRAWING ---
+        txt = font.render(f"Zoom: {sim.zoom:.1f} | Cars: {len(sim.cars)} / {sim.target_car_count}", True, COLOR_TEXT)
+        screen.blit(txt, (10, 10))
         
-        if is_recording:
-             rec_txt = font.render("REC", True, (255, 0, 0))
-             screen.blit(rec_txt, (SCREEN_WIDTH-50, 10))
-             # Capture
-             if frame_counter % 4 == 0:
-                  from pygame.image import tostring
-                  # Capture efficient
-                  frame_str = tostring(screen, 'RGB')
-                  recorded_frames.append(frame_str)
-             frame_counter += 1
+        info_txt = font.render("Right Click Lights to Toggle | Left Click Buttons to Set Cars", True, (150, 150, 150))
+        screen.blit(info_txt, (10, 30))
+
+        for b in buttons:
+            b.draw(screen, font, sim.target_car_count)
 
         pygame.display.flip()
         clock.tick(60)
