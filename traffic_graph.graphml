@@ -1,0 +1,739 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d19" for="edge" attr.name="tunnel" attr.type="string" />
+  <key id="d18" for="edge" attr.name="access" attr.type="string" />
+  <key id="d17" for="edge" attr.name="geometry" attr.type="string" />
+  <key id="d16" for="edge" attr.name="length" attr.type="string" />
+  <key id="d15" for="edge" attr.name="reversed" attr.type="string" />
+  <key id="d14" for="edge" attr.name="ref" attr.type="string" />
+  <key id="d13" for="edge" attr.name="oneway" attr.type="string" />
+  <key id="d12" for="edge" attr.name="name" attr.type="string" />
+  <key id="d11" for="edge" attr.name="maxspeed" attr.type="string" />
+  <key id="d10" for="edge" attr.name="lanes" attr.type="string" />
+  <key id="d9" for="edge" attr.name="junction" attr.type="string" />
+  <key id="d8" for="edge" attr.name="highway" attr.type="string" />
+  <key id="d7" for="edge" attr.name="osmid" attr.type="string" />
+  <key id="d6" for="node" attr.name="street_count" attr.type="string" />
+  <key id="d5" for="node" attr.name="x" attr.type="string" />
+  <key id="d4" for="node" attr.name="y" attr.type="string" />
+  <key id="d3" for="graph" attr.name="simplified" attr.type="string" />
+  <key id="d2" for="graph" attr.name="crs" attr.type="string" />
+  <key id="d1" for="graph" attr.name="created_with" attr.type="string" />
+  <key id="d0" for="graph" attr.name="created_date" attr.type="string" />
+  <graph edgedefault="directed">
+    <node id="255042684">
+      <data key="d4">44.4783307</data>
+      <data key="d5">26.072286</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255042688">
+      <data key="d4">44.4780223</data>
+      <data key="d5">26.0721904</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255042690">
+      <data key="d4">44.4777773</data>
+      <data key="d5">26.0726551</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255042694">
+      <data key="d4">44.4782076</data>
+      <data key="d5">26.0731026</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255043166">
+      <data key="d4">44.4779634</data>
+      <data key="d5">26.0730917</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255043510">
+      <data key="d4">44.4784294</data>
+      <data key="d5">26.0725228</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255044129">
+      <data key="d4">44.4781396</data>
+      <data key="d5">26.0721774</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255046412">
+      <data key="d4">44.4794462</data>
+      <data key="d5">26.0693134</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255046413">
+      <data key="d4">44.4793124</data>
+      <data key="d5">26.069212</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255048074">
+      <data key="d4">44.4753109</data>
+      <data key="d5">26.0709169</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255048075">
+      <data key="d4">44.4751225</data>
+      <data key="d5">26.0711348</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255048077">
+      <data key="d4">44.4748686</data>
+      <data key="d5">26.0710541</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255048081">
+      <data key="d4">44.474852</data>
+      <data key="d5">26.070459</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255048082">
+      <data key="d4">44.4752012</data>
+      <data key="d5">26.0704039</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255048365">
+      <data key="d4">44.4753159</data>
+      <data key="d5">26.0705911</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="255049603">
+      <data key="d4">44.4750957</data>
+      <data key="d5">26.0711425</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="494778562">
+      <data key="d4">44.4778661</data>
+      <data key="d5">26.0729757</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="494778567">
+      <data key="d4">44.4747819</data>
+      <data key="d5">26.0706128</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="750482642">
+      <data key="d4">44.4820947</data>
+      <data key="d5">26.0734099</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="2121905025">
+      <data key="d4">44.4743366</data>
+      <data key="d5">26.0711007</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="2126481964">
+      <data key="d4">44.4762131</data>
+      <data key="d5">26.0713371</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="2126776948">
+      <data key="d4">44.4774437</data>
+      <data key="d5">26.0729857</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="2500991397">
+      <data key="d4">44.475291</data>
+      <data key="d5">26.071171</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="3280909722">
+      <data key="d4">44.4783633</data>
+      <data key="d5">26.0725532</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="3690973987">
+      <data key="d4">44.475122</data>
+      <data key="d5">26.0740172</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="5112340401">
+      <data key="d4">44.4751914</data>
+      <data key="d5">26.0714933</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="5142316396">
+      <data key="d4">44.4817854</data>
+      <data key="d5">26.0742613</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="5142324426">
+      <data key="d4">44.4817281</data>
+      <data key="d5">26.0746699</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="5142324434">
+      <data key="d4">44.4815765</data>
+      <data key="d5">26.0745827</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="5261434725">
+      <data key="d4">44.4811335</data>
+      <data key="d5">26.0743171</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="6193443331">
+      <data key="d4">44.4777875</data>
+      <data key="d5">26.0725255</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="11349373557">
+      <data key="d4">44.4757021</data>
+      <data key="d5">26.0737274</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="11349373558">
+      <data key="d4">44.4755694</data>
+      <data key="d5">26.0739327</data>
+      <data key="d6">3</data>
+    </node>
+    <node id="12677199057">
+      <data key="d4">44.4746933</data>
+      <data key="d5">26.0690606</data>
+      <data key="d6">3</data>
+    </node>
+    <edge source="255042684" target="255044129" id="0">
+      <data key="d7">218248935</data>
+      <data key="d8">primary</data>
+      <data key="d9">circular</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">23.26852810129179</data>
+      <data key="d17">LINESTRING (26.072286 44.4783307, 26.0722444 44.4782892, 26.0722119 44.4782433, 26.0721908 44.478195, 26.0721774 44.4781396)</data>
+    </edge>
+    <edge source="255042684" target="255046412" id="0">
+      <data key="d7">[492739816, 1185512918]</data>
+      <data key="d8">secondary</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Bulevardul Poligrafiei</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">266.5148651398193</data>
+      <data key="d17">LINESTRING (26.072286 44.4783307, 26.072231 44.4783464, 26.0721735 44.478364, 26.0720909 44.4783941, 26.0720158 44.4784232, 26.071995 44.4784311, 26.0716298 44.4785683, 26.0694509 44.4793941, 26.0693134 44.4794462)</data>
+    </edge>
+    <edge source="255042688" target="6193443331" id="0">
+      <data key="d7">[218248936, 713108235, 544125048]</data>
+      <data key="d8">primary</data>
+      <data key="d9">circular</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">39.07895488137085</data>
+      <data key="d17">LINESTRING (26.0721904 44.4780223, 26.0722214 44.4779627, 26.0722679 44.4779083, 26.0723282 44.4778614, 26.0723751 44.4778358, 26.0724189 44.4778164, 26.072467 44.4778004, 26.0725101 44.4777901, 26.0725255 44.4777875)</data>
+    </edge>
+    <edge source="255042688" target="2126481964" id="0">
+      <data key="d7">[492739817, 1154436406]</data>
+      <data key="d8">secondary</data>
+      <data key="d10">['1', '2']</data>
+      <data key="d11">RO:urban</data>
+      <data key="d12">Bulevardul Mărăști</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">213.2114675589672</data>
+      <data key="d17">LINESTRING (26.0721904 44.4780223, 26.072193 44.4779693, 26.0721884 44.4779251, 26.0721807 44.4778819, 26.072174 44.4778581, 26.0721673 44.4778342, 26.0721614 44.4778212, 26.0721226 44.4777305, 26.07201 44.4774796, 26.0716959 44.4768908, 26.0715652 44.476687, 26.0714604 44.47651, 26.0714146 44.4764044, 26.0713371 44.4762131)</data>
+    </edge>
+    <edge source="255042690" target="2126776948" id="0">
+      <data key="d7">202731693</data>
+      <data key="d8">primary</data>
+      <data key="d10">1</data>
+      <data key="d11">60</data>
+      <data key="d12">Bulevardul „Regele Mihai I”</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">45.63300443114842</data>
+      <data key="d17">LINESTRING (26.0726551 44.4777773, 26.0727508 44.4777054, 26.0727964 44.4776639, 26.0728406 44.4776189, 26.0728928 44.4775596, 26.0729857 44.4774437)</data>
+    </edge>
+    <edge source="255042690" target="494778562" id="0">
+      <data key="d7">[218086198, 218268103]</data>
+      <data key="d8">primary</data>
+      <data key="d9">circular</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">27.69979295644996</data>
+      <data key="d17">LINESTRING (26.0726551 44.4777773, 26.0727218 44.4777827, 26.0727867 44.4777949, 26.0728736 44.4778191, 26.0729228 44.4778397, 26.0729757 44.4778661)</data>
+    </edge>
+    <edge source="255042694" target="255043510" id="0">
+      <data key="d7">418951541</data>
+      <data key="d8">primary</data>
+      <data key="d9">circular</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">56.57217261186584</data>
+      <data key="d17">LINESTRING (26.0731026 44.4782076, 26.0730604 44.4782636, 26.0730124 44.4783106, 26.0729537 44.4783531, 26.0728939 44.4783834, 26.0728424 44.478404, 26.0727879 44.4784197, 26.0727328 44.4784294, 26.0726723 44.478435, 26.0725982 44.4784348, 26.0725228 44.4784294)</data>
+    </edge>
+    <edge source="255043166" target="255042694" id="0">
+      <data key="d7">131480129</data>
+      <data key="d8">primary</data>
+      <data key="d9">circular</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">27.56793438626034</data>
+      <data key="d17">LINESTRING (26.0730917 44.4779634, 26.0731036 44.4779909, 26.0731184 44.478038, 26.0731228 44.4780866, 26.0731215 44.4781252, 26.0731133 44.4781711, 26.0731026 44.4782076)</data>
+    </edge>
+    <edge source="255043510" target="255042684" id="0">
+      <data key="d7">668480485</data>
+      <data key="d8">primary</data>
+      <data key="d9">circular</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">22.112569704880016</data>
+      <data key="d17">LINESTRING (26.0725228 44.4784294, 26.0724474 44.4784127, 26.0723834 44.4783893, 26.0723288 44.4783614, 26.072286 44.4783307)</data>
+    </edge>
+    <edge source="255044129" target="255042688" id="0">
+      <data key="d7">902465596</data>
+      <data key="d8">primary</data>
+      <data key="d9">circular</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">13.136708210674826</data>
+      <data key="d17">LINESTRING (26.0721774 44.4781396, 26.0721765 44.4780806, 26.0721904 44.4780223)</data>
+    </edge>
+    <edge source="255046412" target="255046413" id="0">
+      <data key="d7">851608239</data>
+      <data key="d8">secondary_link</data>
+      <data key="d10">2</data>
+      <data key="d11">50</data>
+      <data key="d13">False</data>
+      <data key="d15">False</data>
+      <data key="d16">16.913661315963772</data>
+    </edge>
+    <edge source="255046413" target="255046412" id="0">
+      <data key="d7">851608239</data>
+      <data key="d8">secondary_link</data>
+      <data key="d10">2</data>
+      <data key="d11">50</data>
+      <data key="d13">False</data>
+      <data key="d15">True</data>
+      <data key="d16">16.913661315963772</data>
+    </edge>
+    <edge source="255046413" target="255044129" id="0">
+      <data key="d7">[1185514299, 672964188, 1119561927]</data>
+      <data key="d8">secondary</data>
+      <data key="d10">['3', '4']</data>
+      <data key="d11">50</data>
+      <data key="d12">Bulevardul Poligrafiei</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">269.8730472180589</data>
+      <data key="d17">LINESTRING (26.069212 44.4793124, 26.0694596 44.4792189, 26.0702647 44.478914, 26.0705407 44.4788089, 26.0718994 44.478303, 26.071922 44.4782942, 26.0719739 44.4782738, 26.0720416 44.4782395, 26.0720943 44.4782102, 26.0721405 44.4781768, 26.0721774 44.4781396)</data>
+    </edge>
+    <edge source="255048074" target="255048365" id="0">
+      <data key="d7">23554167</data>
+      <data key="d8">secondary</data>
+      <data key="d9">roundabout</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Piața Montreal</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">26.536949289347746</data>
+      <data key="d17">LINESTRING (26.0709169 44.4753109, 26.0708104 44.4753344, 26.0706989 44.4753361, 26.0705911 44.4753159)</data>
+    </edge>
+    <edge source="255048075" target="255048074" id="0">
+      <data key="d7">23554167</data>
+      <data key="d8">secondary</data>
+      <data key="d9">roundabout</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Piața Montreal</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">28.101653765202705</data>
+      <data key="d17">LINESTRING (26.0711348 44.4751225, 26.0711227 44.4751504, 26.0710949 44.4751933, 26.071061 44.475232, 26.0710009 44.4752751, 26.0709169 44.4753109)</data>
+    </edge>
+    <edge source="255048075" target="2500991397" id="0">
+      <data key="d7">447459688</data>
+      <data key="d18">permit</data>
+      <data key="d8">residential</data>
+      <data key="d10">1</data>
+      <data key="d11">RO:urban</data>
+      <data key="d12">Bulevardul Mărăști</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">18.967349772236133</data>
+      <data key="d17">LINESTRING (26.0711348 44.4751225, 26.071145 44.4751599, 26.0711614 44.4752273, 26.071171 44.475291)</data>
+    </edge>
+    <edge source="255048077" target="255049603" id="0">
+      <data key="d7">23554167</data>
+      <data key="d8">secondary</data>
+      <data key="d9">roundabout</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Piața Montreal</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">26.961472537436848</data>
+      <data key="d17">LINESTRING (26.0710541 44.4748686, 26.0711013 44.474919, 26.0711326 44.4749753, 26.0711465 44.4750351, 26.0711425 44.4750957)</data>
+    </edge>
+    <edge source="255048081" target="494778567" id="0">
+      <data key="d7">23554167</data>
+      <data key="d8">secondary</data>
+      <data key="d9">roundabout</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Piața Montreal</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">14.594154657569236</data>
+      <data key="d17">LINESTRING (26.070459 44.474852, 26.0705056 44.4748228, 26.0705568 44.4747995, 26.0706128 44.4747819)</data>
+    </edge>
+    <edge source="255048082" target="255048081" id="0">
+      <data key="d7">23554167</data>
+      <data key="d8">secondary</data>
+      <data key="d9">roundabout</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Piața Montreal</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">41.92481023752218</data>
+      <data key="d17">LINESTRING (26.0704039 44.4752012, 26.0703531 44.4751092, 26.0703492 44.4750103, 26.0703658 44.4749608, 26.0704038 44.4749027, 26.070459 44.474852)</data>
+    </edge>
+    <edge source="255048082" target="12677199057" id="0">
+      <data key="d7">[1368806776, 1368806777]</data>
+      <data key="d8">['tertiary_link', 'tertiary']</data>
+      <data key="d10">2</data>
+      <data key="d11">50</data>
+      <data key="d12">Bulevardul Expoziției</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">122.13420042652898</data>
+      <data key="d17">LINESTRING (26.0704039 44.4752012, 26.070128 44.4751116, 26.0699998 44.4750716, 26.0698091 44.4750199, 26.0695365 44.4749584, 26.0693943 44.4748976, 26.0693115 44.4748567, 26.0692073 44.4747941, 26.0690606 44.4746933)</data>
+    </edge>
+    <edge source="255048365" target="255048082" id="0">
+      <data key="d7">23554167</data>
+      <data key="d8">secondary</data>
+      <data key="d9">roundabout</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Piața Montreal</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">19.864251226403212</data>
+      <data key="d17">LINESTRING (26.0705911 44.4753159, 26.0705179 44.4752873, 26.0705107 44.4752829, 26.0704546 44.4752485, 26.0704039 44.4752012)</data>
+    </edge>
+    <edge source="255049603" target="255048075" id="0">
+      <data key="d7">23554167</data>
+      <data key="d8">secondary</data>
+      <data key="d9">roundabout</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Piața Montreal</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">3.042009999399369</data>
+    </edge>
+    <edge source="255049603" target="5112340401" id="0">
+      <data key="d7">903148198</data>
+      <data key="d8">residential</data>
+      <data key="d10">2</data>
+      <data key="d11">RO:urban</data>
+      <data key="d12">Bulevardul Expoziției</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">29.798631192284915</data>
+    </edge>
+    <edge source="494778562" target="255043166" id="0">
+      <data key="d7">448278711</data>
+      <data key="d8">primary</data>
+      <data key="d9">circular</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">14.304755006069424</data>
+      <data key="d17">LINESTRING (26.0729757 44.4778661, 26.0730041 44.477883, 26.0730387 44.4779104, 26.0730676 44.4779342, 26.0730917 44.4779634)</data>
+    </edge>
+    <edge source="494778567" target="255048077" id="0">
+      <data key="d7">23554167</data>
+      <data key="d8">secondary</data>
+      <data key="d9">roundabout</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Piața Montreal</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">38.583627545543386</data>
+      <data key="d17">LINESTRING (26.0706128 44.4747819, 26.0706969 44.4747678, 26.0707833 44.4747669, 26.0708361 44.4747742, 26.0708602 44.4747775, 26.0709328 44.4747986, 26.0709983 44.4748293, 26.0710541 44.4748686)</data>
+    </edge>
+    <edge source="2121905025" target="5112340401" id="0">
+      <data key="d7">202210923</data>
+      <data key="d8">residential</data>
+      <data key="d10">2</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">102.40828370584164</data>
+      <data key="d17">LINESTRING (26.0711007 44.4743366, 26.071106 44.4744873, 26.0711329 44.4746002, 26.0711718 44.4747236, 26.0712025 44.4747974, 26.0712733 44.4749486, 26.0713385 44.4750553, 26.0714103 44.4751343, 26.0714933 44.4751914)</data>
+    </edge>
+    <edge source="2121905025" target="255048077" id="0">
+      <data key="d7">672359800</data>
+      <data key="d8">secondary</data>
+      <data key="d10">3</data>
+      <data key="d11">50</data>
+      <data key="d12">Bulevardul Mărăști</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">60.79927002475618</data>
+      <data key="d17">LINESTRING (26.0711007 44.4743366, 26.0710202 44.4744954, 26.0710014 44.4745539, 26.0709989 44.474604, 26.071003 44.4746524, 26.071015 44.4747108, 26.0710324 44.474781, 26.0710541 44.4748686)</data>
+    </edge>
+    <edge source="2126481964" target="255048365" id="0">
+      <data key="d7">492742580</data>
+      <data key="d8">secondary</data>
+      <data key="d10">3</data>
+      <data key="d11">RO:urban</data>
+      <data key="d12">Bulevardul Mărăști</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">116.67778305738499</data>
+      <data key="d17">LINESTRING (26.0713371 44.4762131, 26.0712656 44.4760911, 26.0711739 44.4759444, 26.0710912 44.4758244, 26.0710281 44.4757369, 26.0709646 44.4756631, 26.0707476 44.4754632, 26.0706827 44.4754037, 26.0706437 44.4753663, 26.0705911 44.4753159)</data>
+    </edge>
+    <edge source="2126776948" target="11349373558" id="0">
+      <data key="d7">202732296</data>
+      <data key="d18">yes</data>
+      <data key="d8">primary</data>
+      <data key="d11">60</data>
+      <data key="d12">Bulevardul „Regele Mihai I”</data>
+      <data key="d13">False</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">221.5434282251353</data>
+    </edge>
+    <edge source="2126776948" target="494778562" id="0">
+      <data key="d7">218086196</data>
+      <data key="d8">primary</data>
+      <data key="d10">2</data>
+      <data key="d11">60</data>
+      <data key="d12">Bulevardul „Regele Mihai I”</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">47.36946227431578</data>
+      <data key="d17">LINESTRING (26.0729857 44.4774437, 26.0729624 44.4776028, 26.0729519 44.4776836, 26.0729463 44.477757, 26.0729543 44.4778017, 26.0729637 44.477839, 26.0729757 44.4778661)</data>
+    </edge>
+    <edge source="2500991397" target="255048074" id="0">
+      <data key="d7">447459659</data>
+      <data key="d8">residential</data>
+      <data key="d10">2</data>
+      <data key="d11">RO:urban</data>
+      <data key="d12">Bulevardul Expoziției</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">20.302100796005025</data>
+      <data key="d17">LINESTRING (26.071171 44.475291, 26.0710892 44.4752999, 26.0710235 44.475306, 26.0709762 44.4753094, 26.0709169 44.4753109)</data>
+    </edge>
+    <edge source="3280909722" target="2126481964" id="0">
+      <data key="d7">[1154436405, 321350717, 321350719]</data>
+      <data key="d8">secondary</data>
+      <data key="d10">1</data>
+      <data key="d11">50</data>
+      <data key="d12">Pasajul subteran Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d19">yes</data>
+      <data key="d15">False</data>
+      <data key="d16">258.2194976343726</data>
+      <data key="d17">LINESTRING (26.0725532 44.4783633, 26.072378 44.4780386, 26.0722139 44.477764, 26.0720044 44.4772907, 26.0719066 44.4771022, 26.0714862 44.4764048, 26.0713371 44.4762131)</data>
+    </edge>
+    <edge source="3280909722" target="3690973987" id="0">
+      <data key="d7">[492743225, 321350723, 1154436404, 321350725]</data>
+      <data key="d8">primary</data>
+      <data key="d10">2</data>
+      <data key="d11">50</data>
+      <data key="d12">Pasajul subteran Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d19">yes</data>
+      <data key="d15">False</data>
+      <data key="d16">385.78299550279144</data>
+      <data key="d17">LINESTRING (26.0725532 44.4783633, 26.0725335 44.4782488, 26.0725207 44.4781421, 26.072519 44.4780267, 26.0725213 44.4778972, 26.0725362 44.4777578, 26.0725594 44.4776144, 26.0725996 44.4774422, 26.0726456 44.4772713, 26.0726807 44.4771581, 26.0727234 44.4770405, 26.0727797 44.4769161, 26.0728494 44.4767821, 26.0729406 44.4766309, 26.0730506 44.4764644, 26.0732225 44.4762182, 26.073524 44.475787, 26.0736318 44.4756252, 26.0740172 44.475122)</data>
+    </edge>
+    <edge source="5112340401" target="2500991397" id="0">
+      <data key="d7">[244433543, 244433544, 902475337, 903148201, 244433545, 23554255]</data>
+      <data key="d8">residential</data>
+      <data key="d10">2</data>
+      <data key="d11">RO:urban</data>
+      <data key="d12">Bulevardul Expoziției</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">299.96033011193816</data>
+      <data key="d17">LINESTRING (26.0714933 44.4751914, 26.0717128 44.4752306, 26.072153 44.4753025, 26.0724056 44.4753448, 26.0729974 44.4754496, 26.0730409 44.4754644, 26.0730739 44.4754864, 26.0730872 44.4755096, 26.0730841 44.4755311, 26.073074 44.4755483, 26.0730574 44.4755641, 26.0730285 44.4755793, 26.0729589 44.47561, 26.0728807 44.4756382, 26.0728647 44.4756106, 26.0728437 44.4755888, 26.0728147 44.47557, 26.0727857 44.4755577, 26.0722786 44.4754735, 26.0716688 44.475365, 26.0715739 44.475349, 26.0715076 44.4753335, 26.0714069 44.4753032, 26.0713093 44.4752898, 26.0712372 44.4752872, 26.071171 44.475291)</data>
+    </edge>
+    <edge source="5142316396" target="750482642" id="0">
+      <data key="d7">305362286</data>
+      <data key="d8">residential</data>
+      <data key="d10">1</data>
+      <data key="d11">RO:urban</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">75.79732696875591</data>
+      <data key="d17">LINESTRING (26.0742613 44.4817854, 26.0738913 44.4819198, 26.0735237 44.4820533, 26.0734099 44.4820947)</data>
+    </edge>
+    <edge source="5142316396" target="5142324434" id="0">
+      <data key="d7">529346415</data>
+      <data key="d8">residential</data>
+      <data key="d10">1</data>
+      <data key="d11">30</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">39.13589988627731</data>
+      <data key="d17">LINESTRING (26.0742613 44.4817854, 26.0742471 44.4817519, 26.0742495 44.4817241, 26.0742645 44.4816973, 26.0742875 44.4816771, 26.0743271 44.4816559, 26.0744836 44.4816073, 26.0745163 44.4815971, 26.0745827 44.4815765)</data>
+    </edge>
+    <edge source="5142324426" target="5142324434" id="0">
+      <data key="d7">418948280</data>
+      <data key="d8">primary</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Șoseaua București-Ploiești</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">18.221501160138462</data>
+    </edge>
+    <edge source="5142324426" target="5142316396" id="0">
+      <data key="d7">529346415</data>
+      <data key="d8">residential</data>
+      <data key="d10">1</data>
+      <data key="d11">30</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">36.379724296537354</data>
+      <data key="d17">LINESTRING (26.0746699 44.4817281, 26.074598 44.4817529, 26.0745766 44.4817603, 26.0744073 44.4818186, 26.0743627 44.4818247, 26.0743194 44.4818211, 26.0742863 44.4818073, 26.0742613 44.4817854)</data>
+    </edge>
+    <edge source="5142324434" target="5261434725" id="0">
+      <data key="d7">418948280</data>
+      <data key="d8">primary</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Șoseaua București-Ploiești</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">53.57701862857021</data>
+    </edge>
+    <edge source="5261434725" target="3280909722" id="0">
+      <data key="d7">[492743552, 321350714, 1119562174]</data>
+      <data key="d8">primary</data>
+      <data key="d10">2</data>
+      <data key="d11">50</data>
+      <data key="d12">Pasajul subteran Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">341.145036672774</data>
+      <data key="d19">yes</data>
+      <data key="d17">LINESTRING (26.0743171 44.4811335, 26.0740972 44.4808626, 26.0739202 44.4806445, 26.0736151 44.4802686, 26.0733349 44.4799226, 26.0731901 44.4797428, 26.0730774 44.4795973, 26.0729915 44.479472, 26.0729121 44.4793434, 26.0728307 44.4791954, 26.0727743 44.4790748, 26.0727142 44.4789168, 26.0726336 44.4786729, 26.0725532 44.4783633)</data>
+    </edge>
+    <edge source="5261434725" target="255043510" id="0">
+      <data key="d7">[1307769368, 1320044738, 329774200]</data>
+      <data key="d8">primary</data>
+      <data key="d10">['2', '4']</data>
+      <data key="d11">60</data>
+      <data key="d12">Șoseaua București-Ploiești</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">334.5087825496085</data>
+      <data key="d17">LINESTRING (26.0743171 44.4811335, 26.0737704 44.4802272, 26.0729371 44.4788457, 26.072897 44.4787808, 26.0728575 44.4787179, 26.0728381 44.4786878, 26.0728226 44.4786658, 26.0728035 44.4786447, 26.0727605 44.4786036, 26.0727242 44.4785697, 26.0726933 44.4785447, 26.0725228 44.4784294)</data>
+    </edge>
+    <edge source="6193443331" target="255042690" id="0">
+      <data key="d7">218268103</data>
+      <data key="d8">primary</data>
+      <data key="d9">circular</data>
+      <data key="d10">4</data>
+      <data key="d11">60</data>
+      <data key="d12">Piața Presei Libere</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">10.3750277934959</data>
+      <data key="d17">LINESTRING (26.0725255 44.4777875, 26.0726015 44.477778, 26.0726551 44.4777773)</data>
+    </edge>
+    <edge source="6193443331" target="11349373557" id="0">
+      <data key="d7">492742579</data>
+      <data key="d18">yes</data>
+      <data key="d8">primary</data>
+      <data key="d10">2</data>
+      <data key="d11">60</data>
+      <data key="d12">Bulevardul „Regele Mihai I”</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">251.94282157613245</data>
+      <data key="d17">LINESTRING (26.0725255 44.4777875, 26.0725622 44.4777546, 26.0726228 44.4776993, 26.0727313 44.4775915, 26.0728226 44.477478, 26.0728612 44.4774192, 26.072972 44.4772139, 26.0737274 44.4757021)</data>
+    </edge>
+    <edge source="11349373557" target="3690973987" id="0">
+      <data key="d7">492742579</data>
+      <data key="d18">yes</data>
+      <data key="d8">primary</data>
+      <data key="d10">2</data>
+      <data key="d11">60</data>
+      <data key="d12">Bulevardul „Regele Mihai I”</data>
+      <data key="d13">True</data>
+      <data key="d14">DN1</data>
+      <data key="d15">False</data>
+      <data key="d16">68.48000729944606</data>
+    </edge>
+    <edge source="11349373557" target="11349373558" id="0">
+      <data key="d7">1223556157</data>
+      <data key="d8">primary_link</data>
+      <data key="d10">2</data>
+      <data key="d11">50</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">21.978699927893235</data>
+    </edge>
+    <edge source="11349373558" target="2126776948" id="0">
+      <data key="d7">202732296</data>
+      <data key="d18">yes</data>
+      <data key="d8">primary</data>
+      <data key="d11">60</data>
+      <data key="d12">Bulevardul „Regele Mihai I”</data>
+      <data key="d13">False</data>
+      <data key="d14">DN1</data>
+      <data key="d15">True</data>
+      <data key="d16">221.5434282251353</data>
+    </edge>
+    <edge source="12677199057" target="255048081" id="0">
+      <data key="d7">1368806775</data>
+      <data key="d8">tertiary</data>
+      <data key="d10">3</data>
+      <data key="d11">40</data>
+      <data key="d12">Bulevardul Expoziției</data>
+      <data key="d13">True</data>
+      <data key="d15">False</data>
+      <data key="d16">113.18429778700435</data>
+      <data key="d17">LINESTRING (26.0690606 44.4746933, 26.0701782 44.474862, 26.070223 44.4748688, 26.0702727 44.4748713, 26.0703205 44.4748696, 26.070459 44.474852)</data>
+    </edge>
+    <data key="d0">2026-01-18 18:44:52</data>
+    <data key="d1">OSMnx 2.0.7</data>
+    <data key="d2">epsg:4326</data>
+    <data key="d3">True</data>
+  </graph>
+</graphml>

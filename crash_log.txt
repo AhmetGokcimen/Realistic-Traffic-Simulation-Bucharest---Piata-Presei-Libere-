@@ -1,0 +1,5 @@
+Import Error:
+Traceback (most recent call last):
+  File "C:\Users\yavuz\Downloads\Realistic-Traffic-Simulation-Bucharest---Piata-Presei-Libere--main\main.py", line 23, in <module>
+    import osmnx as ox
+ModuleNotFoundError: No module named 'osmnx'
