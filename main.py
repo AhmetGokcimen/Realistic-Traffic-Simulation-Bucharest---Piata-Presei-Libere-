@@ -32,11 +32,12 @@ except:
 ox.settings.use_cache = True
 ox.settings.log_console = False
 
-# --- CONFIG ---
-SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
+# --- CONFIGURATION PARAMETERS ---
+# Initial size, but we will use dynamic size in the loop
+SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720 
 METERS_TO_PIXELS = 12.0
 
-# --- COLORS ---
+# --- COLOR PALETTE ---
 COLOR_BG = (16, 16, 16)
 COLOR_ASPHALT = (32, 32, 32)
 COLOR_ORANGE = (255, 165, 0)
@@ -48,10 +49,10 @@ COLOR_BTN_IDLE = (50, 50, 50)
 COLOR_BTN_HOVER = (80, 80, 80)
 COLOR_BTN_ACTIVE = (100, 200, 100)
 COLOR_HEADLIGHT = (255, 255, 200, 40)
-COLOR_PANEL_BG = (10, 10, 30, 200) # Dark Blue Transparent
+COLOR_PANEL_BG = (10, 10, 30, 200)
 COLOR_PANEL_BORDER = (50, 50, 100)
 
-# --- BRAND SETTINGS ---
+# --- SIMULATION SETTINGS ---
 SPEED_LEVELS = [0.5, 0.75, 1.0, 1.5, 2.0]
 
 BRAND_COLORS = {
@@ -60,14 +61,14 @@ BRAND_COLORS = {
     "Volkswagen": (0, 120, 255),
     "Dacia": (170, 170, 170),
     "Renault": (255, 210, 0),
-    "Opel": (220, 220, 255),
+    "Audi": (220, 220, 255),
     "Toyota": (255, 80, 80),
     "Hyundai": (120, 255, 180),
 }
 
 BRANDS = list(BRAND_COLORS.keys())
 
-# --- UI BUTTON CLASS ---
+# --- UI COMPONENT: BUTTON ---
 class Button:
     def __init__(self, x, y, w, h, text, value):
         self.rect = pygame.Rect(x, y, w, h)
@@ -98,12 +99,12 @@ class Button:
                 return True
         return False
 
-# --- SIMULATION CLASSES ---
+# --- SIMULATION AGENTS ---
 
 class TrafficLight:
     def __init__(self, node_id, green_time=20.0, red_time=20.0):
         self.node_id = node_id
-        self.state = 0 # 0=Green, 1=Yellow, 2=Red
+        self.state = 0 
         self.timer = random.uniform(0, green_time)
         self.green_time = green_time
         self.yellow_time = 2.0
@@ -145,12 +146,12 @@ class Car:
 
         self.finished = False
         self.velocity = 0.0
-        self.max_velocity = 8.0
+        self.max_velocity = 8.0 
 
-        self.a_max = 2.0
-        self.b_comf = 2.0
-        self.s0 = 1.5
-        self.T = 1.0
+        self.a_max = 2.0   
+        self.b_comf = 2.0  
+        self.s0 = 1.5      
+        self.T = 1.0       
 
         self.waiting_time = 0.0
         self.is_aggressive = False
@@ -163,14 +164,12 @@ class Car:
     def spawn_scatter(self):
         edges = list(self.G.edges(keys=True, data=True))
         if not edges: return False
-
         weights = [d['length'] for u,v,k,d in edges]
 
         for _ in range(10):
              u, v, k, data = random.choices(edges, weights=weights, k=1)[0]
              length = data['length']
              start_prog = random.uniform(0.0, max(0.0, length - 5.0))
-
              if length < 5.0: continue
 
              nodes = list(self.G.nodes())
@@ -203,6 +202,12 @@ class Car:
         return self.G.edges[u,v,0]['length']
 
     def _calculate_turn_signal(self):
+        # --- BMW LOGIC IMPLEMENTATION ---
+        # If it's a BMW, turn signals are physically disabled :)
+        if self.brand == "BMW":
+            self.turn_signal = 0
+            return
+        
         if self.path_index + 2 >= len(self.path):
             self.turn_signal = 0
             return
@@ -223,8 +228,8 @@ class Car:
 
         diff = (ang2 - ang1 + 180) % 360 - 180
 
-        if diff > 20: self.turn_signal = -1
-        elif diff < -20: self.turn_signal = 1
+        if diff > 20: self.turn_signal = -1 
+        elif diff < -20: self.turn_signal = 1 
         else: self.turn_signal = 0
 
     def update_physics(self, dt, traffic_sim):
@@ -257,7 +262,7 @@ class Car:
         except: my_idx = -1
 
         leader_vel = v_cap
-        gap = 1000.0
+        gap = 1000.0 
 
         if self.velocity < 0.1: self.waiting_time += dt
         elif self.velocity > 1.0:
@@ -279,12 +284,12 @@ class Car:
         else:
             if v in traffic_sim.traffic_lights:
                 tl = traffic_sim.traffic_lights[v]
-                if tl.state == 2:
+                if tl.state == 2: 
                     should_stop_light = True
                     if dist_to_end < 20.0:
-                        tl.sensor_active = True
+                        tl.sensor_active = True 
 
-                elif tl.state == 1:
+                elif tl.state == 1: 
                     if (dist_to_end / max(self.velocity, 2.0)) > 2.0 or dist_to_end > 10.0:
                          should_stop_light = True
 
@@ -330,6 +335,7 @@ class Car:
         if step_dist > gap: step_dist = max(0, gap - 0.1)
 
         self.progress += step_dist
+
         if self.progress >= self.current_edge_len:
              self.path_index += 1
              if self.path_index >= len(self.path)-1:
@@ -345,15 +351,17 @@ class Car:
         v = self.path[self.path_index+1]
         data = self.G.edges[u,v,0]
         geom = data.get('geometry')
-        OFFSET_M = 1.5
+        OFFSET_M = 1.5 
 
         if geom:
              frac = self.progress / self.current_edge_len
              frac = max(0, min(1, frac))
              pt = geom.interpolate(frac, normalized=True)
              pt_ex = geom.interpolate(min(frac+0.01, 1.0), normalized=True)
+             
              dx, dy = pt_ex.x - pt.x, pt_ex.y - pt.y
              angle = 0 if (dx==0 and dy==0) else math.degrees(math.atan2(dy, dx))
+             
              rad = math.radians(angle)
              ox = -math.sin(rad)*OFFSET_M
              oy = math.cos(rad)*OFFSET_M
@@ -378,14 +386,12 @@ class TrafficSim:
         self.cars_on_edge = {}
         self.traffic_lights = {}
         self.is_night = False
-        self.speed_multiplier = 1.0  # global speed factor for cars
+        self.speed_multiplier = 1.0
 
-        # brand speed (kept as-is, but not required for visibility filter)
         self.brand_speed = {b: 1.0 for b in BRANDS}
         self.brand_speed_idx = {b: SPEED_LEVELS.index(1.0) for b in BRANDS}
 
-        # visibility filter
-        self.visible_brand = None   # None = show all
+        self.visible_brand = None  
 
         self._init_tl()
 
@@ -424,11 +430,12 @@ class TrafficSim:
              k = (c.path[c.path_index], c.path[c.path_index+1])
              if k not in self.cars_on_edge: self.cars_on_edge[k] = []
              self.cars_on_edge[k].append(c)
+        
         for k in self.cars_on_edge:
              self.cars_on_edge[k].sort(key=lambda x: x.progress, reverse=True)
+             
         for c in active: c.update_physics(dt, self)
 
-    # --- STATS CALCULATION ---
     def get_statistics(self):
         total_cars = len(self.cars)
         if total_cars == 0: return 0, 0, 0
@@ -440,13 +447,14 @@ class TrafficSim:
             if c.velocity < 1.0:
                 stopped_cars += 1
 
-        avg_speed = (total_velocity / total_cars) * 3.6
+        avg_speed = (total_velocity / total_cars) * 3.6 
         congestion = stopped_cars / total_cars
 
         return total_cars, avg_speed, congestion
 
-    def toggle_light_at_cursor(self, mx, my):
-        wx, wy = screen_to_world(mx, my, self.camera_x, self.camera_y, self.zoom)
+    def toggle_light_at_cursor(self, mx, my, scr_w, scr_h):
+        # Passed Screen width/height for accurate Raycasting
+        wx, wy = screen_to_world(mx, my, self.camera_x, self.camera_y, self.zoom, scr_w, scr_h)
         closest_node = None
         min_dist = 30.0
         for node_id, tl in self.traffic_lights.items():
@@ -467,18 +475,21 @@ class TrafficSim:
             return True
         return False
 
+# --- UTILITY FUNCTIONS ---
 def lerp_color(c1, c2, t):
     t = max(0.0, min(1.0, t))
     return tuple(int(a + (b - a) * t) for a, b in zip(c1, c2))
 
-def world_to_screen(wx, wy, cx, cy, zoom):
-    sx = (SCREEN_WIDTH // 2) + (wx - cx) * zoom
-    sy = (SCREEN_HEIGHT // 2) + (cy - wy) * zoom
+def world_to_screen(wx, wy, cx, cy, zoom, scr_w, scr_h):
+    """ Projects World Coordinates using dynamic Screen Pixels """
+    sx = (scr_w // 2) + (wx - cx) * zoom
+    sy = (scr_h // 2) + (cy - wy) * zoom
     return int(sx), int(sy)
 
-def screen_to_world(sx, sy, cx, cy, zoom):
-    wx = cx + (sx - SCREEN_WIDTH/2) / zoom
-    wy = cy - (sy - SCREEN_HEIGHT/2) / zoom
+def screen_to_world(sx, sy, cx, cy, zoom, scr_w, scr_h):
+    """ Projects Screen Pixels using dynamic Screen Dimensions """
+    wx = cx + (sx - scr_w/2) / zoom
+    wy = cy - (sy - scr_h/2) / zoom
     return wx, wy
 
 def rotate_point(px, py, angle):
@@ -487,10 +498,14 @@ def rotate_point(px, py, angle):
     s = math.sin(rad)
     return px * c - py * s, px * s + py * c
 
-# --- DRAW DASHBOARD FUNCTION ---
+# --- DASHBOARD RENDERING ---
 def draw_dashboard(screen, sim, font):
+    """ Draws the Analytics Panel anchored to Top Right """
+    scr_w, scr_h = screen.get_size()
+    
     w, h = 240, 150
-    x, y = SCREEN_WIDTH - w - 10, 10
+    # Anchor to Top Right
+    x, y = scr_w - w - 10, 10
 
     s = pygame.Surface((w, h), pygame.SRCALPHA)
     s.fill(COLOR_PANEL_BG)
@@ -527,8 +542,10 @@ def draw_dashboard(screen, sim, font):
 
     screen.blit(s, (x, y))
 
+# --- MAIN APPLICATION LOOP ---
 def main():
     graph_file = "traffic_graph.graphml"
+    
     if getattr(sys, 'frozen', False) and os.path.exists(os.path.join(sys._MEIPASS, graph_file)):
         G = ox.load_graphml(os.path.join(sys._MEIPASS, graph_file))
     elif os.path.exists(graph_file):
@@ -546,19 +563,18 @@ def main():
     sim = TrafficSim(G_proj)
 
     pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
+    # Initial setup
+    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     pygame.display.set_caption("Traffic Sim V4: Analytics Dashboard")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont('consolas', 14, bold=True)
 
+    # Initialize Buttons (Coordinates will be updated in loop)
     buttons = []
     vals = [50, 100, 150, 200, 250]
-    bx, by = 10, SCREEN_HEIGHT - 40
     for v in vals:
-        buttons.append(Button(bx, by, 50, 30, str(v), v))
-        bx += 60
+        buttons.append(Button(0, 0, 50, 30, str(v), v))
 
-    # --- BRAND BUTTONS (top-left) ---
     brand_buttons = []
     bw, bh = 150, 28
     gap_y = 6
@@ -567,26 +583,38 @@ def main():
         y = start_y + i * (bh + gap_y)
         brand_buttons.append(Button(start_x, y, bw, bh, brand, brand))
 
-    # speed buttons (as-is)
     speed_buttons = []
-    speed_vals = [0.5, 0.75, 1.5, 2.0]
-
+    speed_vals = [0.5, 0.75, 1.0, 1.5, 2.0]
     btn_w, btn_h = 60, 30
-    gap = 10
-    total_w = len(speed_vals) * btn_w + (len(speed_vals) - 1) * gap
-
-    sbx = SCREEN_WIDTH - total_w - 10
-    sby = SCREEN_HEIGHT - 44
+    btn_gap = 10
+    total_speed_w = len(speed_vals) * btn_w + (len(speed_vals) - 1) * btn_gap
 
     for sv in speed_vals:
-        speed_buttons.append(Button(sbx, sby, btn_w, btn_h, f"x{sv}", sv))
-        sbx += btn_w + gap
+        speed_buttons.append(Button(0, 0, btn_w, btn_h, f"x{sv}", sv))
 
     running = True
     while running:
-        dt = 0.1
+        dt = 0.1 
         mx, my = pygame.mouse.get_pos()
+        current_w, current_h = screen.get_size() # Get current Dynamic Resolution
 
+        # --- DYNAMIC UI LAYOUT UPDATE ---
+        # 1. Car Count Buttons -> Bottom Left
+        bx, by = 10, current_h - 40
+        for b in buttons:
+            b.rect.topleft = (bx, by)
+            bx += 60
+
+        # 2. Speed Buttons -> Bottom Right
+        sbx = current_w - total_speed_w - 10
+        sby = current_h - 44
+        for b in speed_buttons:
+            b.rect.topleft = (sbx, sby)
+            sbx += btn_w + btn_gap
+
+        # Brand buttons are already fixed Top Left (start_x, start_y), so they are fine.
+        
+        # Handle Input
         for b in buttons: b.check_hover(mx, my)
         for b in speed_buttons: b.check_hover(mx, my)
         for b in brand_buttons: b.check_hover(mx, my)
@@ -600,33 +628,27 @@ def main():
                      sim.is_night = not sim.is_night
 
              elif e.type == pygame.MOUSEWHEEL:
-                  wx_b, wy_b = screen_to_world(mx, my, sim.camera_x, sim.camera_y, sim.zoom)
+                  wx_b, wy_b = screen_to_world(mx, my, sim.camera_x, sim.camera_y, sim.zoom, current_w, current_h)
                   if e.y > 0: sim.zoom = min(sim.zoom * 1.1, 50.0)
                   elif e.y < 0: sim.zoom = max(sim.zoom / 1.1, 0.5)
-                  wx_n, wy_n = screen_to_world(mx, my, sim.camera_x, sim.camera_y, sim.zoom)
+                  wx_n, wy_n = screen_to_world(mx, my, sim.camera_x, sim.camera_y, sim.zoom, current_w, current_h)
                   sim.camera_x -= (wx_n - wx_b)
                   sim.camera_y -= (wy_n - wy_b)
 
              elif e.type == pygame.MOUSEBUTTONDOWN:
                   if e.button == 1:
                       clicked_btn = False
-
-                      # car count
                       for b in buttons:
                           if b.is_clicked(e):
                               sim.target_car_count = b.value
                               clicked_btn = True
                               break
-
-                      # global speed
                       if not clicked_btn:
                           for b in speed_buttons:
                               if b.is_clicked(e):
                                   sim.speed_multiplier = b.value
                                   clicked_btn = True
                                   break
-
-                      # brand visibility filter (ONLY this matters for your request)
                       if not clicked_btn:
                           for b in brand_buttons:
                               if b.is_clicked(e):
@@ -634,15 +656,13 @@ def main():
                                   sim.visible_brand = None if sim.visible_brand == br else br
                                   clicked_btn = True
                                   break
-
-                      # camera drag
                       if not clicked_btn:
                           sim.dragging = True
                           sim.ds_mouse = (mx, my)
                           sim.ds_cam = (sim.camera_x, sim.camera_y)
 
                   elif e.button == 3:
-                      sim.toggle_light_at_cursor(mx, my)
+                      sim.toggle_light_at_cursor(mx, my, current_w, current_h)
 
              elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
                   sim.dragging = False
@@ -655,17 +675,19 @@ def main():
 
         sim.step(dt)
 
+        # --- RENDERING PIPELINE ---
         screen.fill(COLOR_BG)
         ROAD_W = int(3.5 * sim.zoom)
         CURB_W = ROAD_W + 4
 
-        # --- LAYER 1: ROAD ---
+        # Pass current_w and current_h to world_to_screen functions
         visible_edges = []
         for u, v, k, d in G_proj.edges(keys=True, data=True):
              g = d['geometry']
              if g.geom_type == 'LineString':
-                  pts = [world_to_screen(x,y, sim.camera_x, sim.camera_y, sim.zoom) for x,y in g.coords]
-                  if any(-100 < p[0] < SCREEN_WIDTH+100 and -100 < p[1] < SCREEN_HEIGHT+100 for p in pts):
+                  pts = [world_to_screen(x,y, sim.camera_x, sim.camera_y, sim.zoom, current_w, current_h) for x,y in g.coords]
+                  # Frustum culling using current screen dims
+                  if any(-100 < p[0] < current_w+100 and -100 < p[1] < current_h+100 for p in pts):
                        visible_edges.append((u, v, d, pts))
                        if len(pts) > 1:
                             pygame.draw.lines(
@@ -677,8 +699,7 @@ def main():
                             )
                             pygame.draw.lines(screen, COLOR_ASPHALT, False, pts, ROAD_W)
 
-        # --- LAYER 2: HEATMAP ---
-        heatmap_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        heatmap_surf = pygame.Surface((current_w, current_h), pygame.SRCALPHA)
         for u, v, d, pts in visible_edges:
              if len(pts) > 1:
                   cars = sim.cars_on_edge.get((u,v), [])
@@ -700,7 +721,6 @@ def main():
                        pygame.draw.lines(heatmap_surf, col, False, pts, ROAD_W)
         screen.blit(heatmap_surf, (0,0))
 
-        # --- LAYER 3: MARKINGS ---
         for u, v, d, pts in visible_edges:
              if len(pts) > 1:
                   for i in range(len(pts)-1):
@@ -714,17 +734,16 @@ def main():
                                  my_p = int(p1[1] + (p2[1]-p1[1])*t)
                                  pygame.draw.circle(screen, (80, 80, 80), (mx_p, my_p), 1)
 
-        # --- LAYER 4: CARS & HEADLIGHTS ---
-        light_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        light_surf = pygame.Surface((current_w, current_h), pygame.SRCALPHA)
 
         for c in sim.cars:
              if sim.visible_brand is not None and getattr(c, "brand", None) != sim.visible_brand:
                  continue
              if c.finished: continue
              wx, wy, ang = c.get_state_visual()
-             sx, sy = world_to_screen(wx, wy, sim.camera_x, sim.camera_y, sim.zoom)
+             sx, sy = world_to_screen(wx, wy, sim.camera_x, sim.camera_y, sim.zoom, current_w, current_h)
 
-             if -100 < sx < SCREEN_WIDTH+100 and -100 < sy < SCREEN_HEIGHT+100:
+             if -100 < sx < current_w+100 and -100 < sy < current_h+100:
                   L = int(c.length_m * sim.zoom)
                   W = int(c.width_m * sim.zoom)
 
@@ -752,10 +771,11 @@ def main():
                   if c.is_aggressive: base_col = (255, 50, 50)
                   pygame.draw.rect(s, base_col, (1,1,L-2,W-2), border_radius=2)
 
-                  if c.velocity < 0.1:
+                  if c.velocity < 0.1: 
                        pygame.draw.rect(s, (255,0,0), (1,1,3,W//3))
                        pygame.draw.rect(s, (255,0,0), (1,W-1-W//3,3,W//3))
 
+                  # Turn signal rendering
                   if c.blinker_state and c.turn_signal != 0:
                       blink_col = (255, 255, 0)
                       if c.turn_signal == 1:
@@ -768,17 +788,15 @@ def main():
                   rs = pygame.transform.rotate(s, ang)
                   screen.blit(rs, rs.get_rect(center=(sx, sy)))
 
-        # --- LAYER 5: NIGHT OVERLAY ---
         if sim.is_night:
-            night_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            night_surf = pygame.Surface((current_w, current_h), pygame.SRCALPHA)
             night_surf.fill((0, 0, 20, 170))
             screen.blit(night_surf, (0,0))
             screen.blit(light_surf, (0,0))
 
-        # --- LAYER 6: TRAFFIC LIGHTS ---
         for n, d in G_proj.nodes(data=True):
-             sx, sy = world_to_screen(d['x'], d['y'], sim.camera_x, sim.camera_y, sim.zoom)
-             if -50 < sx < SCREEN_WIDTH+50 and -50 < sy < SCREEN_HEIGHT+50:
+             sx, sy = world_to_screen(d['x'], d['y'], sim.camera_x, sim.camera_y, sim.zoom, current_w, current_h)
+             if -50 < sx < current_w+50 and -50 < sy < current_h+50:
                   rad = int(ROAD_W * 0.8)
                   if n in sim.traffic_lights:
                        l = sim.traffic_lights[n]
@@ -789,28 +807,22 @@ def main():
                   else:
                        pygame.draw.circle(screen, COLOR_CURB, (sx, sy), 2)
 
-        # --- DRAW DASHBOARD UI ---
+        # UI OVERLAY - Use current_w and current_h
         draw_dashboard(screen, sim, font)
 
         info_txt = font.render("Left Click: Set Cars | Right Click: Light | N: Night Mode", True, (150, 150, 150))
-        screen.blit(info_txt, (10, SCREEN_HEIGHT - 70))
+        screen.blit(info_txt, (10, current_h - 70))
 
         for b in buttons:
             b.draw(screen, font, sim.target_car_count)
 
-        # --- DRAW BRAND BUTTONS (top-left) ---
         for b in brand_buttons:
             br = b.value
             b.text = f"{br}"
-            b.draw(screen, font, sim.visible_brand)  # selected brand turns green
+            b.draw(screen, font, sim.visible_brand)
 
-        # draw speed buttons
-        btn_w, btn_h = 60, 30
-        gap = 10
-        total_w = len(speed_buttons) * btn_w + (len(speed_buttons) - 1) * gap
-
-        sx = SCREEN_WIDTH - total_w - 10
-        sy = SCREEN_HEIGHT - 70
+        sx = current_w - total_speed_w - 10
+        sy = current_h - 70
 
         speed_txt = font.render("Speed:", True, (150, 150, 150))
         screen.blit(speed_txt, (sx, sy))
